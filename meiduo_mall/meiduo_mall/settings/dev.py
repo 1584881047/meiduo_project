@@ -134,18 +134,25 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
+
+
+# 静态资源
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, '../static_files')]
+
+
+
 
 # 缓存
-CACHE = {
-    "default": {  # 默认存储信息: 存到 0 号库
+CACHES = {
+    "default": { # 默认存储信息: 存到 0 号库
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": "redis://127.0.0.1:6379/0",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     },
-    "session": {  # session 信息: 存到 1 号库
+    "session": { # session 信息: 存到 1 号库
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": "redis://127.0.0.1:6379/1",
         "OPTIONS": {
