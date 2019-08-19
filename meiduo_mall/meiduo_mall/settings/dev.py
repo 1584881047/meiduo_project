@@ -60,7 +60,8 @@ ROOT_URLCONF = 'meiduo_mall.urls'
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.jinja2.jinja2',
+        # jinja2 模板引擎
+        'BACKEND': 'django.template.backends.jinja2.Jinja2',
         'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -70,12 +71,13 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            # 添加 Jinja2 模板引擎环境
             'environment': 'meiduo_mall.utils.jinja2_env.jinja2_environment',
         },
     },
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -147,7 +149,7 @@ USE_TZ = True
 
 # 静态资源
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static_files')]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 
 
@@ -215,3 +217,8 @@ LOGGING = {
         },
     }
 }
+
+
+
+# 指定本项目用户模型类
+AUTH_USER_MODEL = 'users.User'

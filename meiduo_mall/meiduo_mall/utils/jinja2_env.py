@@ -6,7 +6,7 @@ from jinja2 import Environment
 def jinja2_environment(**options):
     env = Environment(**options)
     env.globals.update({
-        'static_files': staticfiles_storage.url,
+        'static': staticfiles_storage.url,
         'url': reverse,
     })
     return env

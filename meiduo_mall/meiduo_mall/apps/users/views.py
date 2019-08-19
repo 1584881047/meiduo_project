@@ -6,8 +6,12 @@ from django.views.generic.base import View
 
 
 class RegisterView(View):
-    def get(self, request):
-        response = HttpResponse('RegisterView')
-        response['Access-Control-Allow-Origin'] = '*'
+    """用户注册"""
 
-        return response
+    def get(self, request):
+        """
+        提供注册界面
+        :param request: 请求对象
+        :return: 注册界面
+        """
+        return render(request, 'register.html')
