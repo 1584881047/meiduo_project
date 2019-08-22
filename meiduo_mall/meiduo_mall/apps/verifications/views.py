@@ -76,11 +76,12 @@ class SMSCodeView(View):
         pl.setex('sms_code_%s' % mobile, 300, sms_code)
         pl.setex('sms_flag_%s' % mobile, 60, 1)
         pl.execute()
-        # 发送短信验证码
-        send_code.delay(mobile,sms_code)
-        # CCP().send_template_sms(mobile, [sms_code, '5'], 1)
 
-        # TODO 发送短信 返回OK
+
+        # 发送短信验证码
+        # celery 用delay 去调用,开启异步
+        send_code.delay(mobile,sms_code)
+
         return JsonResponse(
             {'code': response_code.RETCODE.OK, 'errmsg': 'OK'})
 

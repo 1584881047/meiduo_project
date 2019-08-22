@@ -1,6 +1,8 @@
 from celery_tasks.main import celery_app
 from celery_tasks.yuntongxun.ccp_sms import CCP
 
+
+# 创建人物并且用celery实列的task方法装饰
 @celery_app.task(bind=True,name = 'send_code',retry_backoff=3)
 def send_code(self,mobile,sms_code):
     """

@@ -35,7 +35,7 @@ class LoginView(View):
         if not re.match(r'^[a-zA-Z0-9_-]{8,20}$', password):
             return http.HttpResponseForbidden('密码格式不正确')
 
-        # 判断登录
+        # 判断登录 重写authenticate在utils
         user = authenticate(username=username, password=password)
 
         if user is None:
@@ -49,8 +49,10 @@ class LoginView(View):
             request.session.set_expiry(0)
 
         # 状态保持
-        login(request,user)
-
+        login(request, user)
+        # 保存到cookie 用户名
+        response = redirect(reverse('contents:index'))
+        response.set_cookie('username', user.username, max_age=3600 * 24 * 7)
         # 重定向到首页
         return redirect(reverse('contents:index'))
 
