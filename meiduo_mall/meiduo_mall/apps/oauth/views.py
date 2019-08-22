@@ -110,6 +110,8 @@ class QQUserView(View):
 
         try:
             user = User.objects.get(mobile=mobile)
+            if OAuthQQUser.objects.filter(user=user).count() > 0 :
+                return render(request, 'oauth_callback.html', {'account_errmsg': '此用户已经绑定过QQ'})
 
         except:
             # 用户不存在,新建
