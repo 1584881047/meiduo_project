@@ -2,7 +2,7 @@ import json
 import re
 
 from django import http
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 from django.db import DatabaseError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -13,6 +13,21 @@ from django.views.generic.base import View
 from django_redis import get_redis_connection
 
 from users.models import User
+from users.utils import LoginRequiredMixin
+
+
+class UserInfoView(LoginRequiredMixin,View):
+    def get(self, request):
+        return render(request, 'user_center_info.html')
+
+
+class LogoutView(View):
+
+    def get(self, request):
+        logout(request)
+        response = redirect(reverse('contents:index'))
+        response.delete_cookie('username')
+        return response
 
 
 class LoginView(View):
@@ -53,9 +68,12 @@ class LoginView(View):
         # 保存到cookie 用户名
         response = redirect(reverse('contents:index'))
         response.set_cookie('username', user.username, max_age=3600 * 24 * 7)
-        # 重定向到首页
-        return redirect(reverse('contents:index'))
-
+        # 重定向到要跳转的页面
+        next = request.GET.get('next')
+        if not next:
+            return redirect(reverse('contents:index'))
+        else:
+            return redirect(next)
 
 class RegisterView(View):
     """用户注册"""

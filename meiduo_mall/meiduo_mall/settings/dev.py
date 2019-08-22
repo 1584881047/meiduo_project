@@ -224,3 +224,5 @@ LOGGING = {
 AUTH_USER_MODEL = 'users.User'
 # 重写验证登录
 AUTHENTICATION_BACKENDS = ['users.utils.UsernameMobileAuthBackend']
+# 设置登录页路径
+LOGIN_URL = '/login/'
