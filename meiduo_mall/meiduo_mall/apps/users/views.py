@@ -128,8 +128,11 @@ class RegisterView(View):
             return render(request, 'register.html', {'register_errmsg': '注册失败'})
         # 会话保持
         login(request, user)
+        # 保存用户名草cookie
+        response = redirect(reverse('contents:index'))
+        response.set_cookie('username', user.username, max_age=3600 * 24 * 7)
         # 重定向到首页
-        return redirect(reverse('contents:index'))
+        return response
 
 
 class UsernameCountView(View):
