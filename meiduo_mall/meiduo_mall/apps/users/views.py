@@ -12,13 +12,67 @@ from django.urls import reverse
 from django.views.generic.base import View
 from django_redis import get_redis_connection
 
+from celery_tasks.email.tasks import send_verify_email
+from meiduo_mall.utils.response_code import RETCODE
 from users.models import User
 from users.utils import LoginRequiredMixin
 
 
-class UserInfoView(LoginRequiredMixin,View):
+class VerifyEmailView(View):
     def get(self, request):
-        return render(request, 'user_center_info.html')
+        token = request.GET.get('token')
+
+        if not token:
+            return http.HttpResponseBadRequest('缺少token')
+
+        user = User.check_verify_email_token(token)
+
+        if not user:
+            return http.HttpResponseForbidden('无效的token')
+
+        try:
+            user.email_active = True
+            user.save()
+        except BaseException:
+            return http.HttpResponseServerError('激活邮件失败')
+
+        # 返回邮箱验证结果
+        return redirect(reverse('users:info'))
+
+
+class EmailView(LoginRequiredMixin, View):
+    def put(self, request):
+        email = json.loads(request.body.decode()).get('email')
+        if not email:
+            return http.HttpResponseForbidden('邮箱地址不能为空')
+
+        if not re.match(r'^[a-z0-9][\w\.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$', email):
+            return http.HttpResponseForbidden('邮箱格式不正确')
+
+        try:
+            request.user.email = email
+            request.user.save()
+        except BaseException as e:
+            print(e)
+            return http.JsonResponse({'code': RETCODE.DBERR, 'errmsg': '添加邮箱失败'})
+
+        # TODO 发送验证邮箱 在celery 异步处理
+        # 生成验证URL
+        verify_url = request.user.generate_verify_email_url()
+
+        send_verify_email.delay(email, verify_url)
+
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': '添加邮箱成功'})
+
+
+class UserInfoView(LoginRequiredMixin, View):
+    def get(self, request):
+        return render(request, 'user_center_info.html', {
+            'username': request.user.username,
+            'mobile': request.user.mobile,
+            'email': request.user.email,
+            'email_active': request.user.email_active
+        })
 
 
 class LogoutView(View):
@@ -74,6 +128,7 @@ class LoginView(View):
             return redirect(reverse('contents:index'))
         else:
             return redirect(next)
+
 
 class RegisterView(View):
     """用户注册"""

@@ -10,7 +10,6 @@ from django_redis import get_redis_connection
 # Create your views here.
 from django.urls import reverse
 from django.views import View
-from itsdangerous import TimedJSONWebSignatureSerializer
 
 from meiduo_mall.utils.response_code import RETCODE
 from oauth.models import OAuthQQUser
