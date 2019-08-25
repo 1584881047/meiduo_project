@@ -16,11 +16,10 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 
+from . import views
+
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url(r'^', include('meiduo_mall.apps.users.urls', namespace='users')),
-    url(r'^', include('meiduo_mall.apps.contents.urls', namespace='contents')),
-    url(r'^', include('verifications.urls')),
-    url(r'^', include('oauth.urls')),
-    url(r'^', include('areas.urls'))
+    url(r'^areas/$', views.ProvinceAreasView.as_view()),
+    url(r'^areas/(?P<pk>[1-9]\d+)/$', views.SubAreasView.as_view()),
+
 ]
