@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'verifications',
     'oauth',
     'areas',
+    'goods',
 ]
 
 MIDDLEWARE = [
@@ -253,3 +254,15 @@ EMAIL_FROM = '李晓微<xiaoweilee_w@163.com>'
 
 # 验证邮箱路径
 EMAIL_VERIFY_URL = 'http://www.meiduo.site:8000/emails/verification/'
+
+
+
+
+
+#fastdfs
+
+# FDFS客户端的配置文件.
+FDFS_CLIENT_CONF = os.path.join(BASE_DIR, 'utils/fastdfs/client.conf')
+# 访问FDFS中存储的文件时,地址有可能变化, 所以我们把地址放在这里记录:
+FDFS_URL = 'http://192.168.89.30:8888/'
+DEFAULT_FILE_STORAGE = 'meiduo_mall.utils.fastdfs.fastdfs_storage.FastDFSStorage'

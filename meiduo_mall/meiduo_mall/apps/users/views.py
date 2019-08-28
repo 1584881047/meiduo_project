@@ -19,6 +19,42 @@ from users.models import User, Address
 from users.utils import LoginRequiredMixin
 
 
+class ChangePasswordView(LoginRequiredMixin, View):
+    """修改密码"""
+
+    def get(self, request):
+        """展示修改密码界面"""
+        return render(request, 'user_center_pass.html')
+
+    def post(self, request):
+        old_password = request.POST.get('old_password')
+        new_password = request.POST.get('new_password')
+        new_password2 = request.POST.get('new_password2')
+
+        if not all([old_password, new_password, new_password2]):
+            return http.HttpResponseForbidden('缺少必传参数')
+
+        checkFlag = request.user.check_password(old_password)
+        if not checkFlag:
+            return render(request, 'user_center_pass.html', {'origin_pwd_errmsg': '原始密码错误'})
+
+        if not re.match(r'^[0-9A-Za-z]{8,20}$', new_password):
+            return http.HttpResponseForbidden('密码最少8位，最长20位')
+        if new_password != new_password2:
+            return http.HttpResponseForbidden('两次输入的密码不一致')
+
+        try:
+            request.user.set_password(new_password)
+            request.user.save()
+        except:
+            return render(request, 'user_center_pass.html', {'change_pwd_errmsg': '修改密码失败'})
+
+        logout(request)
+        response = redirect(reverse('users:login'))
+        response.delete_cookie('username')
+        return response
+
+
 class UpdateTitleAddressView(View):
     def put(self, request, address_id):
         new_title = json.loads(request.body.decode()).get('title')
