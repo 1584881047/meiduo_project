@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'oauth',
     'areas',
     'goods',
+    'haystack',
 ]
 
 MIDDLEWARE = [
@@ -261,8 +262,26 @@ EMAIL_VERIFY_URL = 'http://www.meiduo.site:8000/emails/verification/'
 
 #fastdfs
 
-# FDFS客户端的配置文件.
-FDFS_CLIENT_CONF = os.path.join(BASE_DIR, 'utils/fastdfs/client.conf')
-# 访问FDFS中存储的文件时,地址有可能变化, 所以我们把地址放在这里记录:
-FDFS_URL = 'http://192.168.89.30:8888/'
-DEFAULT_FILE_STORAGE = 'meiduo_mall.utils.fastdfs.fastdfs_storage.FastDFSStorage'
+# # FDFS客户端的配置文件.
+# FDFS_CLIENT_CONF = os.path.join(BASE_DIR, 'utils/fastdfs/client.conf')
+# # 访问FDFS中存储的文件时,地址有可能变化, 所以我们把地址放在这里记录:
+# FDFS_URL = 'http://192.168.89.30:8888/'
+# DEFAULT_FILE_STORAGE = 'meiduo_mall.utils.fastdfs.fastdfs_storage.FastDFSStorage'
+
+
+
+
+# Haystack
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'URL': 'http://172.16.81.130:9200/', # Elasticsearch服务器ip地址，端口号固定为9200
+        'INDEX_NAME': 'meiduo_mall', # Elasticsearch建立的索引库的名称
+    },
+}
+
+# 当添加、修改、删除数据时，自动生成索引
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+
+# 可以在 dev.py 中添加如下代码, 用于决定每页显示数据条数
+HAYSTACK_SEARCH_RESULTS_PER_PAGE = 5

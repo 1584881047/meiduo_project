@@ -10,7 +10,6 @@ except ImportError:
 f = open(os.path.join(os.path.dirname(__file__), 'README.md'))
 long_description = f.read()
 f.close()
-
 sdict = {
     'name': 'fdfs_client-py',
     'version': __version__,
