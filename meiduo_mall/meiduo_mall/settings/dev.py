@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'areas',
     'goods',
     'haystack',
+    'carts'
 ]
 
 MIDDLEWARE = [
@@ -177,6 +178,21 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     },
+    "history": {  # 浏览记录
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/4",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
+    "carts": {  # 购物车
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/5",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
+
 }
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "session"
@@ -231,12 +247,10 @@ AUTHENTICATION_BACKENDS = ['users.utils.UsernameMobileAuthBackend']
 # 设置登录页路径 login_required
 LOGIN_URL = '/login/'
 
-
 # QQ 登录认证
 QQ_CLIENT_ID = '101518219'
 QQ_CLIENT_SECRET = '418d84ebdc7241efb79536886ae95224'
 QQ_REDIRECT_URI = 'http://www.meiduo.site:8000/oauth_callback'
-
 
 # 发送短信的相关设置, 这些设置是当用户没有发送相关字段时, 默认使用的内容:
 # 发送短信必须进行的设置:
@@ -256,11 +270,7 @@ EMAIL_FROM = '李晓微<xiaoweilee_w@163.com>'
 # 验证邮箱路径
 EMAIL_VERIFY_URL = 'http://www.meiduo.site:8000/emails/verification/'
 
-
-
-
-
-#fastdfs
+# fastdfs
 
 # # FDFS客户端的配置文件.
 # FDFS_CLIENT_CONF = os.path.join(BASE_DIR, 'utils/fastdfs/client.conf')
@@ -269,14 +279,12 @@ EMAIL_VERIFY_URL = 'http://www.meiduo.site:8000/emails/verification/'
 # DEFAULT_FILE_STORAGE = 'meiduo_mall.utils.fastdfs.fastdfs_storage.FastDFSStorage'
 
 
-
-
 # Haystack
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
-        'URL': 'http://172.16.81.130:9200/', # Elasticsearch服务器ip地址，端口号固定为9200
-        'INDEX_NAME': 'meiduo_mall', # Elasticsearch建立的索引库的名称
+        'URL': 'http://172.16.81.129:9200/',  # Elasticsearch服务器ip地址，端口号固定为9200
+        'INDEX_NAME': 'meiduo_mall',  # Elasticsearch建立的索引库的名称
     },
 }
 

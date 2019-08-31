@@ -5,6 +5,7 @@ var vm = new Vue({
     data: {
         host,
 		hots: [],
+        hot_skus: [],
 		sku_id: sku_id,
         sku_count: 1,
         sku_price: price,
@@ -92,14 +93,14 @@ var vm = new Vue({
         },
     	// 获取热销商品数据
         get_hot_goods(){
-        	var url = this.hots + '/hot/'+ this.category_id +'/';
+        	var url = this.host + '/hot/'+ this.category_id +'/';
             axios.get(url, {
                     responseType: 'json'
                 })
                 .then(response => {
-                    this.hots = response.data.hot_sku_list;
-                    for(var i=0; i<this.hots.length; i++){
-                        this.hots[i].url = '/goods/' + this.hots[i].id + '.html';
+                    this.hot_skus = response.data.hot_skus;
+                    for(var i=0; i<this.hot_skus.length; i++){
+                        this.hot_skus[i].url = '/goods/' + this.hot_skus[i].id + '.html';
                     }
                 })
                 .catch(error => {

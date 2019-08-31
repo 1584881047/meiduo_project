@@ -1,12 +1,17 @@
+import json
+from datetime import datetime
+
 from django import http
 from django.core.paginator import Paginator, EmptyPage
 from django.shortcuts import render
 
 # Create your views here.
+from django.utils import timezone
 from django.views import View
+from django_redis import get_redis_connection
 
-from contents.utils import get_categories, get_breadcrumb
-from goods.models import GoodsCategory, SKU
+from contents.utils import get_categories, get_breadcrumb, get_goods_and_spec
+from goods.models import GoodsCategory, SKU, GoodsVisitCount
 from meiduo_mall.utils.response_code import RETCODE
 
 
@@ -80,3 +85,104 @@ class HotGoodsView(View):
             })
 
         return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK', 'hot_skus': hot_skus})
+
+
+class DetailView(View):
+    def get(self, request, sku_id):
+        data = get_goods_and_spec(sku_id, request)
+
+        # 商品分类菜单
+        categories = get_categories()
+
+        # 获取面包屑导航:
+        breadcrumb = get_breadcrumb(data['goods'].category3)
+
+        context = {
+            'categories': categories,
+            'goods': data.get('goods'),
+            'specs': data.get('goods_specs'),
+            'sku': data.get('sku'),
+            'breadcrumb': breadcrumb
+        }
+
+        return render(request, 'detail.html', context)
+
+
+class DetailVisitView(View):
+    def post(self, request, category_id):
+        try:
+            category = GoodsCategory.objects.get(id=category_id)
+        except:
+            return http.HttpResponseForbidden('缺少必传参数')
+
+        t = timezone.localtime()
+        today_str = '%d-%02d-%02d' % (t.year, t.month, t.day)
+        today_data = datetime.strptime(today_str, '%Y-%m-%d')
+
+        try:
+            obj = GoodsVisitCount.objects.get(category_id=category_id, date=today_data)
+
+        except:
+            obj = GoodsVisitCount()
+            obj.category = category
+
+        try:
+            obj.count += 1
+            obj.save()
+        except:
+            return http.HttpResponseServerError('服务器异常')
+
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
+
+
+class UserBrowseHistory(View):
+    def post(self,request,):
+        sku_id =  json.loads(request.body.decode()).get('sku_id')
+
+        try:
+            SKU.objects.get(id = sku_id)
+        except SKU.DoesNotExist as e:
+            return http.HttpResponseForbidden('sku不存在')
+
+
+        redis_conn = get_redis_connection('history')
+        pl = redis_conn.pipeline()
+        user_id = request.user.id
+
+        # 从左开始删除所有sku_id
+        pl.lrem('history_%s' % user_id,0,sku_id)
+
+        pl.lpush('history_%s' % user_id, sku_id)
+        # 最后截取: 界面有限, 只保留 5 个
+        pl.ltrim('history_%s' % user_id, 0, 4)
+        pl.execute()
+
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK'})
+
+
+    def get(self,request):
+        user_id = request.user.id
+
+        redis_conn = get_redis_connection('history')
+        sku_ids = redis_conn.lrange('history_%s' % user_id,0,-1)
+
+        skus = []
+        for sku_id in sku_ids:
+            sku = SKU.objects.get(id = sku_id )
+            skus.append({
+                'id':sku.id,
+                "name": sku.name,
+                "default_image_url": sku.default_image_url,
+                "price": sku.price
+            })
+        return http.JsonResponse({'code': RETCODE.OK, 'errmsg': 'OK', 'skus': skus})
+
+
+
+
+
+
+
+
+
+
