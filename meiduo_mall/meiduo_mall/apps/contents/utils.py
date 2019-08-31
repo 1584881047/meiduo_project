@@ -121,7 +121,7 @@ def get_goods_and_spec(sku_id,request):
         'sku':sku
     }
 
-    return
+    return data
 
 
 

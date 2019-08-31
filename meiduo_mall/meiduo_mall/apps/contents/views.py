@@ -12,6 +12,9 @@ from contents.utils import get_categories
 class IndexView(View):
 
     def get(self, request):
+
+
+        print(request.COOKIES.get('carts'))
         """
         获取首页模板
         :param request:

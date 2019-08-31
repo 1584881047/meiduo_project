@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.views.generic.base import View
 from django_redis import get_redis_connection
 
+from carts.utils import merge_cart_cookie_to_redis
 from celery_tasks.email.tasks import send_verify_email
 from meiduo_mall.utils.response_code import RETCODE
 from users.models import User, Address
@@ -370,17 +371,21 @@ class LoginView(View):
         else:
             request.session.set_expiry(0)
 
+            # 重定向到要跳转的页面
+            next = request.GET.get('next')
+            if not next:
+                response = redirect(reverse('contents:index'))
+            else:
+                response = redirect(next)
+        # 保存到cookie 用户名
+        response.set_cookie('username', user.username, max_age=3600 * 24 * 7)
+        response = merge_cart_cookie_to_redis(request, response)
         # 状态保持
         login(request, user)
-        # 保存到cookie 用户名
-        response = redirect(reverse('contents:index'))
-        response.set_cookie('username', user.username, max_age=3600 * 24 * 7)
-        # 重定向到要跳转的页面
-        next = request.GET.get('next')
-        if not next:
-            return redirect(reverse('contents:index'))
-        else:
-            return redirect(next)
+        return  response
+
+
+
 
 
 class RegisterView(View):
