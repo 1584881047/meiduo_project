@@ -2,6 +2,7 @@ import json
 from _decimal import Decimal
 
 from django import http
+from django.core.paginator import Paginator, EmptyPage
 from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render
@@ -203,3 +204,47 @@ class OrderSuccessView(LoginRequiredMixin, View):
             'pay_method': pay_method
         }
         return render(request, 'order_success.html', context)
+
+
+
+class UserOrderInfoView(LoginRequiredMixin,View):
+    def get(self,request,page_num):
+        user = request.user
+
+        try:
+            orders = user.orderinfo_set.all().order_by("-create_time")
+        except BaseException as e:
+            orders = []
+
+        for order in orders :
+            order_goods = order.skus.all()
+            order.status_name =OrderInfo.ORDER_STATUS_CHOICES[order.status-1] [1]
+            order.pay_method_name = OrderInfo.PAY_METHOD_CHOICES[order.pay_method - 1][1]
+            order.sku_list = []
+
+            for order_good in order_goods:
+                sku = order_good.sku
+                sku.count = order_good.count
+                sku.amount = sku.count * sku.price
+                order.sku_list.append(sku)
+
+
+        # 分页
+        try:
+            paginator = Paginator(orders, 2)
+            page_orders = paginator.page(page_num)
+            total_page = paginator.num_pages
+        except EmptyPage as e:
+            return http.HttpResponseNotFound('订单不存在')
+
+        context = {
+            "page_orders": page_orders,
+            'total_page': total_page,
+            'page_num': page_num,
+        }
+        return render(request, "user_center_order.html", context)
+
+
+
+
+
