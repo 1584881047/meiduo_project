@@ -377,11 +377,12 @@ class LoginView(View):
                 response = redirect(reverse('contents:index'))
             else:
                 response = redirect(next)
+        # 状态保持
+        login(request, user)
         # 保存到cookie 用户名
         response.set_cookie('username', user.username, max_age=3600 * 24 * 7)
         response = merge_cart_cookie_to_redis(request, response)
-        # 状态保持
-        login(request, user)
+
         return  response
 
 
